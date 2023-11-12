@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +43,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composeweather.R
+import com.example.composeweather.ui.theme.ButtonLight
 import com.example.composeweather.ui.theme.DarkBlue
+import com.example.composeweather.ui.theme.LightBlue
 import com.example.composeweather.ui.theme.LightWhite
 
 @Composable
@@ -121,6 +127,14 @@ fun MainScreen(name: String) {
                             tint = LightWhite
                         )
                     }
+                },
+                actions = {
+
+                    Image(painter = painterResource(id = R.drawable.weather), contentDescription = "Weather_icon", modifier = Modifier.padding(end = 10.dp))
+
+                    IconButton(modifier = Modifier.padding(end = 5.dp), onClick = { /*TODO*/ }) {
+                        Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Update", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                    }
                 }
             )
         },
@@ -160,17 +174,29 @@ fun WeatherCard() {
                 DarkBlue
             )
         ) {
+
             Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 80.dp), Alignment.TopCenter
+                .fillMaxSize(), Alignment.TopCenter
             )
             {
+
+                IconButton(modifier = Modifier.offset(x = (-155).dp), onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                }
+
+                IconButton(modifier = Modifier.offset(x = 155.dp), onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Filled.Info, contentDescription = "Info", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                }
+
+
+
+
                 Text(
                     text = "Moscow()", style = TextStyle(
                         fontSize = 30.sp,
                         color = LightWhite,
                         textAlign = TextAlign.Center
-                    )
+                    ), modifier = Modifier.offset(y = 5.dp)
                 )
                 Text(
                     text = "0\u00B0", style = TextStyle(
