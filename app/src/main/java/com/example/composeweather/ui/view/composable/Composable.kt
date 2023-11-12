@@ -65,6 +65,9 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.composable
+import com.example.composeweather.data.navigation.NavigationScreen
 import com.example.composeweather.ui.theme.BlueBlue
 import com.example.composeweather.ui.theme.ButtonLightLight
 import com.example.composeweather.ui.theme.DarkDarkBlue
@@ -132,7 +135,21 @@ fun InfoCard() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Menu(){
+fun SetNavHost(navHostController: NavHostController){
+    androidx.navigation.compose.NavHost(navController = navHostController, startDestination = NavigationScreen.Home.route){
+        composable(NavigationScreen.Home.route){
+            WeatherCard()
+        }
+        composable(NavigationScreen.Info.route){
+            InfoCard()
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Menu(navHostController: NavHostController){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -141,9 +158,9 @@ fun Menu(){
     val scope = rememberCoroutineScope()
 
     val items = listOf(
-        NavigationModel("Home", Icons.Filled.Home, Icons.Outlined.Home),
-        NavigationModel("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
-        NavigationModel("Info", Icons.Filled.Info, Icons.Outlined.Info)
+        NavigationModel("Home", Icons.Filled.Home, Icons.Outlined.Home, NavigationScreen.Home.route),
+        //NavigationModel("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, NavigationScreen.Settings.route),
+        NavigationModel("Info", Icons.Filled.Info, Icons.Outlined.Info, NavigationScreen.Info.route)
     )
 
     ModalNavigationDrawer(
@@ -156,7 +173,12 @@ fun Menu(){
                                 selected = index == selectedItemIndex,
                                 onClick = {
                                     selectedItemIndex = index
-                                    //scope.launch { drawerState.close() }
+                                    navHostController.navigate(route = navigationModel.route){
+                                        popUpTo(route = navigationModel.route){
+                                            inclusive = true
+                                        }
+                                    }
+                                    scope.launch { drawerState.close() }
                                 },
                                 icon = {
                                     Icon(
@@ -172,7 +194,7 @@ fun Menu(){
                    }
         },
         drawerState = drawerState) {
-        MainScreen(name = "Menu", ds = drawerState, scope)
+        MainScreen(name = "Menu", ds = drawerState, scope = scope, navHostController)
     }
 }
 
@@ -180,7 +202,7 @@ fun Menu(){
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope) {
+fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope, navHostController: NavHostController) {
 
 
     Scaffold(
@@ -212,7 +234,7 @@ fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope) {
         },
     ) {
         Background(resource = R.drawable.background_default, description = "app_background")
-        WeatherCard()
+        SetNavHost(navHostController = navHostController)
     }
 }
 
