@@ -65,6 +65,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Wallpaper
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.composeweather.data.navigation.NavigationScreen
@@ -133,15 +135,69 @@ fun InfoCard() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SetNavHost(navHostController: NavHostController){
-    androidx.navigation.compose.NavHost(navController = navHostController, startDestination = NavigationScreen.Home.route){
-        composable(NavigationScreen.Home.route){
+fun SettingsCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(650.dp)
+                .padding(horizontal = 5.dp)
+                .offset(y = 15.dp),
+            shape = RoundedCornerShape(25.dp),
+            colors = CardDefaults.cardColors(
+                DarkBlue
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ){
+                Text(
+                    text = "Settings", style = TextStyle(
+                        fontSize = 45.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = LightWhite,
+                        textAlign = TextAlign.Center
+                    ), modifier = Modifier.padding(top = 15.dp)
+                )
+            }
+        }
+    }
+
+}
+
+@Composable
+@Preview(showBackground = true)
+fun settings(){
+    Background(resource = R.drawable.background_default, description = "app_background")
+    SettingsCard()
+}
+
+
+@Composable
+fun SetNavHost(navHostController: NavHostController) {
+    androidx.navigation.compose.NavHost(
+        navController = navHostController,
+        startDestination = NavigationScreen.Home.route
+    ) {
+        composable(NavigationScreen.Home.route) {
             WeatherCard()
         }
-        composable(NavigationScreen.Info.route){
+        composable(NavigationScreen.Info.route) {
             InfoCard()
+        }
+        composable(NavigationScreen.Settings.route) {
+            SettingsCard()
         }
     }
 }
@@ -149,7 +205,7 @@ fun SetNavHost(navHostController: NavHostController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Menu(navHostController: NavHostController){
+fun Menu(navHostController: NavHostController) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -159,41 +215,57 @@ fun Menu(navHostController: NavHostController){
 
     val items = listOf(
         NavigationModel("Home", Icons.Filled.Home, Icons.Outlined.Home, NavigationScreen.Home.route),
-        //NavigationModel("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, NavigationScreen.Settings.route),
+        NavigationModel("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, NavigationScreen.Settings.route),
         NavigationModel("Info", Icons.Filled.Info, Icons.Outlined.Info, NavigationScreen.Info.route)
     )
 
     ModalNavigationDrawer(
         drawerContent = {
-                   ModalDrawerSheet (drawerContainerColor = LightBlue, drawerShape = RoundedCornerShape(40.dp)) {
-                       Spacer(modifier = Modifier.height(20.dp))
-                        items.forEachIndexed {index, navigationModel ->  
-                            NavigationDrawerItem(
-                                label = { Text(text = navigationModel.title) },
-                                selected = index == selectedItemIndex,
-                                onClick = {
-                                    selectedItemIndex = index
-                                    navHostController.navigate(route = navigationModel.route){
-                                        popUpTo(route = navigationModel.route){
-                                            inclusive = true
-                                        }
-                                    }
-                                    scope.launch { drawerState.close() }
+            ModalDrawerSheet(
+                drawerContainerColor = LightBlue,
+                drawerShape = RoundedCornerShape(40.dp)
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
+                items.forEachIndexed { index, navigationModel ->
+                    NavigationDrawerItem(
+                        label = { Text(text = navigationModel.title) },
+                        selected = index == selectedItemIndex,
+                        onClick = {
+                            selectedItemIndex = index
+                            navHostController.navigate(route = navigationModel.route) {
+                                popUpTo(route = navigationModel.route) {
+                                    inclusive = true
+                                }
+                            }
+                            scope.launch { drawerState.close() }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = if (index == selectedItemIndex) {
+                                    navigationModel.selectedIcon
+                                } else {
+                                    navigationModel.unselectedIcon
                                 },
-                                icon = {
-                                    Icon(
-                                        imageVector = if (index == selectedItemIndex){navigationModel.selectedIcon} else {navigationModel.unselectedIcon},
-                                        contentDescription = navigationModel.title
-                                    )
-                                },
-                                modifier = Modifier
-                                    .padding(NavigationDrawerItemDefaults.ItemPadding)
-                                    .padding(vertical = 5.dp),
-                                colors = NavigationDrawerItemDefaults.colors(BlueBlue, DarkBlue, LightWhite, LightWhite, LightWhite, LightWhite))
-                        }
-                   }
+                                contentDescription = navigationModel.title
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                            .padding(vertical = 5.dp),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            BlueBlue,
+                            DarkBlue,
+                            LightWhite,
+                            LightWhite,
+                            LightWhite,
+                            LightWhite
+                        )
+                    )
+                }
+            }
         },
-        drawerState = drawerState) {
+        drawerState = drawerState
+    ) {
         MainScreen(name = "Menu", ds = drawerState, scope = scope, navHostController)
     }
 }
@@ -202,7 +274,12 @@ fun Menu(navHostController: NavHostController){
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope, navHostController: NavHostController) {
+fun MainScreen(
+    name: String,
+    ds: DrawerState,
+    scope: CoroutineScope,
+    navHostController: NavHostController
+) {
 
 
     Scaffold(
@@ -214,7 +291,7 @@ fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope, navHostContr
                     .padding(top = 23.dp, start = 10.dp, end = 10.dp)
                     .clip(shape = RoundedCornerShape(35.dp)),
                 navigationIcon = {
-                    IconButton(onClick = {scope.launch { ds.open() } }) {
+                    IconButton(onClick = { scope.launch { ds.open() } }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
@@ -224,10 +301,19 @@ fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope, navHostContr
                 },
                 actions = {
 
-                    Image(painter = painterResource(id = R.drawable.weather), contentDescription = "Weather_icon", modifier = Modifier.padding(end = 10.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.weather),
+                        contentDescription = "Weather_icon",
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
 
                     IconButton(modifier = Modifier.padding(end = 5.dp), onClick = { /*TODO*/ }) {
-                        Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Update", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Update",
+                            tint = ButtonLight,
+                            modifier = Modifier.size(40.dp, 40.dp)
+                        )
                     }
                 }
             )
@@ -269,17 +355,28 @@ fun WeatherCard() {
             )
         ) {
 
-            Box(modifier = Modifier
-                .fillMaxSize(), Alignment.TopCenter
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(), Alignment.TopCenter
             )
             {
 
                 IconButton(modifier = Modifier.offset(x = (-155).dp), onClick = { /*TODO*/ }) {
-                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                        tint = ButtonLight,
+                        modifier = Modifier.size(40.dp, 40.dp)
+                    )
                 }
 
                 IconButton(modifier = Modifier.offset(x = 155.dp), onClick = { /*TODO*/ }) {
-                    Icon(imageVector = Icons.Filled.Info, contentDescription = "Info", tint = ButtonLight, modifier = Modifier.size(40.dp, 40.dp))
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = "Info",
+                        tint = ButtonLight,
+                        modifier = Modifier.size(40.dp, 40.dp)
+                    )
                 }
 
 
