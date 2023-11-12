@@ -2,11 +2,10 @@ package com.example.composeweather.ui.view.composable
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,20 +16,34 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemColors
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +56,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composeweather.R
+import com.example.composeweather.data.model.NavigationModel
 import com.example.composeweather.ui.theme.ButtonLight
 import com.example.composeweather.ui.theme.DarkBlue
 import com.example.composeweather.ui.theme.LightBlue
 import com.example.composeweather.ui.theme.LightWhite
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import com.example.composeweather.ui.theme.BlueBlue
+import com.example.composeweather.ui.theme.ButtonLightLight
+import com.example.composeweather.ui.theme.DarkDarkBlue
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun InfoCard() {
@@ -107,10 +129,60 @@ fun InfoCard() {
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Menu(){
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var selectedItemIndex by rememberSaveable {
+        mutableStateOf(0)
+    }
+
+    val scope = rememberCoroutineScope()
+
+    val items = listOf(
+        NavigationModel("Home", Icons.Filled.Home, Icons.Outlined.Home),
+        NavigationModel("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
+        NavigationModel("Info", Icons.Filled.Info, Icons.Outlined.Info)
+    )
+
+    ModalNavigationDrawer(
+        drawerContent = {
+                   ModalDrawerSheet (drawerContainerColor = LightBlue, drawerShape = RoundedCornerShape(40.dp)) {
+                       Spacer(modifier = Modifier.height(20.dp))
+                        items.forEachIndexed {index, navigationModel ->  
+                            NavigationDrawerItem(
+                                label = { Text(text = navigationModel.title) },
+                                selected = index == selectedItemIndex,
+                                onClick = {
+                                    selectedItemIndex = index
+                                    //scope.launch { drawerState.close() }
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = if (index == selectedItemIndex){navigationModel.selectedIcon} else {navigationModel.unselectedIcon},
+                                        contentDescription = navigationModel.title
+                                    )
+                                },
+                                modifier = Modifier
+                                    .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                    .padding(vertical = 5.dp),
+                                colors = NavigationDrawerItemDefaults.colors(BlueBlue, DarkBlue, LightWhite, LightWhite, LightWhite, LightWhite))
+                        }
+                   }
+        },
+        drawerState = drawerState) {
+        MainScreen(name = "Menu", ds = drawerState, scope)
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(name: String) {
+fun MainScreen(name: String, ds:DrawerState, scope: CoroutineScope) {
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -120,9 +192,9 @@ fun MainScreen(name: String) {
                     .padding(top = 23.dp, start = 10.dp, end = 10.dp)
                     .clip(shape = RoundedCornerShape(35.dp)),
                 navigationIcon = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {scope.launch { ds.open() } }) {
                         Icon(
-                            imageVector = Icons.Filled.Menu,
+                            imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
                             tint = LightWhite
                         )

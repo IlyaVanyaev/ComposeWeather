@@ -12,6 +12,7 @@ import androidx.compose.ui.res.painterResource
 import com.example.composeweather.R
 import com.example.composeweather.ui.theme.ComposeWeatherTheme
 import com.example.composeweather.ui.view.composable.MainScreen
+import com.example.composeweather.ui.view.composable.Menu
 
 class MainActivity : ComponentActivity() {
 
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ComposeWeatherTheme {
-                MainScreen("Menu")
+                Menu()
             }
         }
     }
